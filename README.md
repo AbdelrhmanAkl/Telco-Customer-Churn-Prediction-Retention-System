@@ -16,7 +16,7 @@
 
 **Telco Churn AI — Live Streamlit Application**
 
-👉 `https://telco-customer-churn-prediction-retention-system-m.streamlit.app/`
+👉 [Launch the Live Demo](https://telco-customer-churn-prediction-retention-system-m.streamlit.app/)
 
 The deployed application allows users to:
 
