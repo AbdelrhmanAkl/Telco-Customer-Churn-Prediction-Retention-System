@@ -4,6 +4,7 @@ import numpy as np
 import joblib
 import json
 import shap
+from pathlib import Path
 
 
 # ============================================================
@@ -115,24 +116,24 @@ st.markdown(
 # LOAD MODEL
 # ============================================================
 
+BASE_DIR = Path(__file__).resolve().parents[1]
+
+MODEL_PATH = BASE_DIR / "artifacts" / "telco_churn_lgbm_pipeline.pkl"
+CONFIG_PATH = BASE_DIR / "artifacts" / "model_config.json"
+
+
 @st.cache_resource
 def load_model():
 
-    model = joblib.load(
-        "artifacts/telco_churn_lgbm_pipeline.pkl"
-    )
+    model = joblib.load(MODEL_PATH)
 
-    with open(
-        "artifacts/model_config.json",
-        "r"
-    ) as f:
+    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         config = json.load(f)
 
     return model, config
 
 
 model, config = load_model()
-
 THRESHOLD = config["threshold"]
 
 
