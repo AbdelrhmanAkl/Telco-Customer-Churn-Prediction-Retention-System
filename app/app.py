@@ -1336,13 +1336,9 @@ if predict_button:
 st.markdown(
     """
     <div class="footer">
-
         Telco Churn AI • LightGBM • SHAP • Streamlit
-
         <br>
-
         AI-powered customer retention decision support system
-
     </div>
     """,
     unsafe_allow_html=True
