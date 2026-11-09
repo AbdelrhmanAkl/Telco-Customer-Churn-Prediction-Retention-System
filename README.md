@@ -1,485 +1,248 @@
-# 📊 Telco Customer Churn Prediction & Retention System
+# Telco Customer Churn Prediction and Retention System
 
-> An end-to-end Machine Learning system for predicting customer churn, identifying high-risk customers, explaining churn drivers, and supporting proactive customer retention decisions.
+An end-to-end machine learning system that predicts customer churn, explains the drivers behind each prediction, and turns the result into a concrete retention plan with the revenue at stake.
 
-[![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
-[![LightGBM](https://img.shields.io/badge/Model-LightGBM-green.svg)](https://lightgbm.readthedocs.io/)
-[![Scikit--learn](https://img.shields.io/badge/Scikit--learn-1.6.1-orange.svg)](https://scikit-learn.org/)
-[![Streamlit](https://img.shields.io/badge/Deployment-Streamlit-red.svg)](https://streamlit.io/)
-[![SHAP](https://img.shields.io/badge/Explainability-SHAP-purple.svg)](https://shap.readthedocs.io/)
+Live demo: https://telco-customer-churn-prediction-retention-system-m.streamlit.app/
 
 ---
 
-## 🚀 Live Demo
+## Overview
 
-### 🌐 Try the Application
+Customer churn is one of the costliest problems in telecommunications. Predicting who might leave is only the first step; a retention team also needs to know why, how much revenue is at risk, and what to do next.
 
-**Telco Churn AI — Live Streamlit Application**
-
-👉 [Launch the Live Demo](https://telco-customer-churn-prediction-retention-system-m.streamlit.app/)
-
-The deployed application allows users to:
-
-* Enter customer information
-* Predict churn probability
-* Classify customer risk level
-* Analyze customer risk factors
-* Generate personalized retention recommendations
-* Explore SHAP-based model explanations
-* Download a customer prediction report
-
----
-
-## 🎯 Project Overview
-
-Customer churn is one of the most important challenges in the telecommunications industry.
-
-Instead of simply predicting whether a customer will leave, this project is designed as a **decision-support system** that combines:
-
-**Prediction → Risk Assessment → Explainability → Retention Action**
-
-The system predicts the probability that a customer will churn and transforms that prediction into actionable retention insights.
-
-### Business Objective
-
-The main objective is to help a telecom company:
-
-* Identify customers at high risk of churn
-* Prioritize retention efforts
-* Understand the factors driving churn
-* Reduce unnecessary retention interventions
-* Support data-driven customer relationship management
-
----
-
-## 🧠 Machine Learning Approach
-
-The final production model is a **LightGBM classifier** integrated into a complete Scikit-learn pipeline.
-
-### End-to-End Pipeline
+This project is built as a decision-support tool that follows one flow:
 
 ```text
-Customer Information
-        │
-        ▼
-Data Preprocessing
-        │
-        ├── Numerical Features
-        │     ├── Median Imputation
-        │     └── Standard Scaling
-        │
-        └── Categorical Features
-              ├── Most-Frequent Imputation
-              └── One-Hot Encoding
-        │
-        ▼
-Feature Engineering
-        │
-        ▼
-LightGBM Classifier
-        │
-        ▼
-Churn Probability
-        │
-        ▼
-Optimized Decision Threshold
-        │
-        ▼
-Risk Classification
-        │
-        ├── 🟢 Low Risk
-        ├── 🟡 Medium Risk
-        └── 🔴 High Risk
-        │
-        ▼
-SHAP Explainability
-        │
-        ▼
-Retention Recommendation
+Prediction  ->  Risk tier  ->  Explanation  ->  Retention action
 ```
 
----
+### What the application does
 
-## ⚙️ Feature Engineering
-
-The system derives additional business-oriented features from the original customer attributes.
-
-Key engineered features include:
-
-* `tenure_group`
-* `avg_monthly_spend`
-* `num_services`
-* `num_security_services`
-* `num_streaming_services`
-* `is_month_to_month`
-* `is_long_term_contract`
-* `is_electronic_check`
-* `is_fiber_optic`
-* `total_services`
-* `has_family`
-
-These features allow the model to capture customer behavior and service relationships that may not be represented directly by individual raw variables.
+- Takes customer profile, services, and billing details as input
+- Predicts the probability of churn
+- Classifies the customer into a Low, Medium, or High risk tier
+- Estimates annual revenue at stake and expected annual loss
+- Explains the top drivers of the prediction with SHAP
+- Recommends retention actions based on the customer's situation
+- Exports a customer report as CSV
+- Includes two built-in examples (at-risk and loyal customer) for quick demonstrations
 
 ---
 
-## 📈 Model Performance
+## Model Performance
 
-The final LightGBM model was evaluated using multiple classification metrics.
+The production model is a LightGBM classifier inside a complete scikit-learn pipeline.
 
-| Metric    |      Score |
-| --------- | ---------: |
-| Accuracy  | **76.63%** |
-| Precision | **54.38%** |
-| Recall    | **75.09%** |
-| F1 Score  | **63.08%** |
-| ROC-AUC   | **83.77%** |
-| PR-AUC    | **65.59%** |
+| Metric    | Score  |
+| --------- | -----: |
+| Accuracy  | 76.63% |
+| Precision | 54.38% |
+| Recall    | 75.09% |
+| F1 score  | 63.08% |
+| ROC-AUC   | 83.77% |
+| PR-AUC    | 65.59% |
 
-### 🎯 Optimized Classification Threshold
+### Decision threshold
 
-The production decision threshold is:
+The production threshold is **0.29** instead of the default 0.50.
 
 ```text
-0.29
+P(churn) >= 0.29   ->  flagged as churn risk
+P(churn) <  0.29   ->  not flagged
 ```
 
-Instead of relying on the default `0.50` threshold, the system uses an optimized threshold of **0.29** to increase the model's ability to identify customers who are likely to churn.
+In retention work, missing a customer who is about to leave usually costs more than contacting one extra customer who would have stayed. A lower threshold trades some precision for higher recall, which is why recall reaches 75%.
 
-This is particularly relevant for retention scenarios where **missing a potential churner can be more costly than contacting an additional low-risk customer**.
+### Risk tiers
+
+| Tier   | Churn probability |
+| ------ | ----------------- |
+| Low    | below 20%         |
+| Medium | 20% to below 29%  |
+| High   | 29% and above     |
+
+---
+
+## Pipeline
 
 ```text
-P(Churn) >= 0.29  →  Churn Risk
-P(Churn) <  0.29  →  No Churn
+Customer input
+      |
+      v
+Feature engineering
+      |
+      v
+Preprocessing (ColumnTransformer)
+  - Numeric:     median imputation, standard scaling
+  - Categorical: most-frequent imputation, one-hot encoding
+      |
+      v
+LightGBM classifier
+      |
+      v
+Churn probability
+      |
+      v
+Threshold (0.29) and risk tier
+      |
+      +--> SHAP explanation
+      |
+      v
+Retention recommendation
 ```
 
----
+### Engineered features
 
-## 🔍 Explainable AI
-
-The application integrates **SHAP (SHapley Additive exPlanations)** to make model predictions more interpretable.
-
-Instead of only returning:
-
-```text
-Customer is likely to churn
-```
-
-the system can provide insight into **why** the customer received a particular prediction.
-
-Examples of potential churn drivers include:
-
-* Month-to-month contracts
-* Electronic check payment
-* High monthly charges
-* Short customer tenure
-* Lack of technical support
-* Lack of online security services
-* Fiber-optic internet service
-
-The application separates factors into:
-
-### 🔴 Factors Increasing Churn Risk
-
-Features contributing toward a higher churn probability.
-
-### 🟢 Factors Reducing Churn Risk
-
-Features contributing toward a lower churn probability.
-
-This makes the system more useful for business decision-making and model interpretation.
+| Feature                  | Meaning                                              |
+| ------------------------ | ---------------------------------------------------- |
+| `tenure_group`           | Tenure bucketed into five ranges                     |
+| `avg_monthly_spend`      | Total charges divided by tenure                      |
+| `num_services`           | Count of active services                             |
+| `num_security_services`  | Security-related add-ons in use                      |
+| `num_streaming_services` | Streaming add-ons in use                             |
+| `is_month_to_month`      | Month-to-month contract flag                         |
+| `is_long_term_contract`  | One-year or two-year contract flag                   |
+| `is_electronic_check`    | Pays by electronic check                             |
+| `is_fiber_optic`         | Uses fiber optic internet                            |
+| `total_services`         | Combined service count                               |
+| `has_family`             | Has a partner or dependents                          |
 
 ---
 
-## 💡 Retention Decision Support
+## Explainability
 
-The system goes beyond prediction by generating retention recommendations based on the customer's risk level.
+Each prediction comes with a SHAP breakdown that shows which factors push the churn probability up and which push it down.
 
-### 🔴 High Risk
-
-Recommended actions may include:
-
-* Personalized retention offers
-* Long-term contract incentives
-* Targeted discounts
-* Technical support interventions
-* Alternative payment options
-
-### 🟡 Medium Risk
-
-Recommended actions may include:
-
-* Personalized engagement campaigns
-* Loyalty benefits
-* Monitoring churn probability
-* Promoting longer-term contracts
-
-### 🟢 Low Risk
-
-Customers are considered to require no immediate intervention.
+Contributions from one-hot encoded columns are combined back into the original business feature, and each driver is shown with the customer's actual value, for example `Contract: Month-to-month` or `Tech support: No`. This keeps the explanation readable for non-technical users.
 
 ---
 
-## 🏗️ Project Architecture
+## Retention Recommendations
 
-```text
-                         ┌──────────────────────┐
-                         │   Customer Inputs    │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │ Feature Engineering  │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │  Preprocessing       │
-                         │  ColumnTransformer   │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │      LightGBM        │
-                         │   Churn Classifier   │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │ Churn Probability    │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │ Threshold = 0.29     │
-                         └──────────┬───────────┘
-                                    │
-                    ┌───────────────┴───────────────┐
-                    ▼                               ▼
-          ┌──────────────────┐             ┌──────────────────┐
-          │ Risk Assessment  │             │ SHAP Explainability│
-          └────────┬─────────┘             └────────┬─────────┘
-                   │                                │
-                   └───────────────┬────────────────┘
-                                   ▼
-                         ┌──────────────────────┐
-                         │ Retention Strategy   │
-                         └──────────────────────┘
-```
+Actions are generated from the customer's own profile. Examples:
+
+- Month-to-month contract: offer a 12-month plan with a loyalty discount
+- Electronic check: encourage automatic payment with a small bill credit
+- No tech support or online security: offer a free trial of these add-ons
+- High fiber optic bill: review pricing and service quality
+- Tenure of 12 months or less: schedule a proactive check-in call
+
+Low-risk customers are marked as needing no intervention.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
-### Machine Learning
-
-* Python
-* Pandas
-* NumPy
-* Scikit-learn
-* LightGBM
-* Joblib
-
-### Explainable AI
-
-* SHAP
-
-### Application & Deployment
-
-* Streamlit
-* Git
-* GitHub
-* Streamlit Community Cloud
-
-### Development
-
-* Jupyter Notebook
-* Python Virtual Environment
+| Area                    | Tools                                             |
+| ----------------------- | ------------------------------------------------- |
+| Machine learning        | Python, Pandas, NumPy, scikit-learn, LightGBM, Joblib |
+| Explainability          | SHAP                                              |
+| Application             | Streamlit, Plotly                                 |
+| Deployment              | Git, GitHub, Streamlit Community Cloud            |
+| Development             | Jupyter Notebook, Python virtual environment      |
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 Telco-Customer-Churn-Prediction-Retention-System/
-│
-├── app/
-│   └── app.py
-│
-├── artifacts/
-│   ├── model_config.json
-│   └── telco_churn_lgbm_pipeline.pkl
-│
-├── notebooks/
-│   └── telco_churn_analysis.ipynb
-│
-├── .gitignore
-├── README.md
-└── requirements.txt
+|
+|-- app/
+|   `-- app.py
+|
+|-- artifacts/
+|   |-- model_config.json
+|   `-- telco_churn_lgbm_pipeline.pkl
+|
+|-- notebooks/
+|   `-- telco_churn_analysis.ipynb
+|
+|-- .gitignore
+|-- README.md
+`-- requirements.txt
 ```
 
 ---
 
-## 🔧 Installation
+## Getting Started
 
 Clone the repository:
 
 ```bash
 git clone https://github.com/AbdelrhmanAkl/Telco-Customer-Churn-Prediction-Retention-System.git
-```
-
-Navigate to the project:
-
-```bash
 cd Telco-Customer-Churn-Prediction-Retention-System
 ```
 
-Create a virtual environment:
-
-```bash
-python -m venv .venv
-```
-
-Activate it on Windows:
+Create and activate a virtual environment (Windows PowerShell):
 
 ```powershell
+python -m venv .venv
 .venv\Scripts\Activate.ps1
 ```
 
-Install dependencies:
+Install dependencies and run the app:
 
 ```bash
 pip install -r requirements.txt
-```
-
----
-
-## ▶️ Run Locally
-
-Start the Streamlit application:
-
-```bash
 streamlit run app/app.py
 ```
 
-The application will open in your browser.
+The application opens in your browser.
 
 ---
 
-## 📊 Model Artifact
+## Model Artifacts
 
-The trained production pipeline is stored in:
+| File                                     | Purpose                                              |
+| ---------------------------------------- | ---------------------------------------------------- |
+| `artifacts/telco_churn_lgbm_pipeline.pkl` | Preprocessing and LightGBM classifier in one pipeline |
+| `artifacts/model_config.json`            | Production threshold and optional display metrics    |
 
-```text
-artifacts/telco_churn_lgbm_pipeline.pkl
-```
+Because preprocessing is saved inside the pipeline, the app can score raw customer inputs without rebuilding any transformation at inference time.
 
-The model configuration and production threshold are stored in:
-
-```text
-artifacts/model_config.json
-```
-
-The saved pipeline contains both preprocessing and the LightGBM classifier, allowing the application to process raw customer inputs without rebuilding the preprocessing pipeline at inference time.
+Optionally, add a `metrics` object to `model_config.json` (for example `{"ROC-AUC": "0.84", "Recall": "0.75"}`) and the app will show it in the header.
 
 ---
 
-## 🧪 Reproducibility
+## Reproducibility
 
-The project includes the complete analysis notebook:
-
-```text
-notebooks/telco_churn_analysis.ipynb
-```
-
-The notebook contains the machine learning workflow used to analyze the data and develop the final model.
+The full analysis and modeling workflow is in `notebooks/telco_churn_analysis.ipynb`.
 
 ---
 
-## 🚀 Deployment
+## Deployment
 
-The application is deployed using **Streamlit Community Cloud**.
+The app is deployed on Streamlit Community Cloud.
 
-Deployment configuration:
+| Setting   | Value                                                          |
+| --------- | -------------------------------------------------------------- |
+| Repository | `AbdelrhmanAkl/Telco-Customer-Churn-Prediction-Retention-System` |
+| Branch    | `main`                                                         |
+| Main file | `app/app.py`                                                   |
+| Python    | 3.11                                                           |
 
-```text
-Repository:
-AbdelrhmanAkl/Telco-Customer-Churn-Prediction-Retention-System
-
-Branch:
-main
-
-Main file:
-app/app.py
-
-Python:
-3.11
-```
-
-The application uses deployment-safe paths to locate the trained model and configuration files regardless of the execution directory.
+Paths to the model and configuration are resolved relative to the file, so the app runs the same way locally and in the cloud.
 
 ---
 
-## 🔐 Production-Oriented Design
+## Production-Oriented Design
 
-Several decisions were made to make the project closer to a real-world ML application:
-
-* Complete preprocessing pipeline saved with the model
-* Unknown categorical values handled using `handle_unknown="ignore"`
-* Missing numerical values handled using median imputation
-* Missing categorical values handled using most-frequent imputation
-* Optimized classification threshold
-* Explainable predictions using SHAP
-* Business-oriented risk categorization
-* Automated retention recommendations
-* Downloadable customer prediction reports
-* Deployment-safe artifact paths
-* Streamlit-based interactive interface
+- Full preprocessing pipeline saved together with the model
+- Unknown categories handled with `handle_unknown="ignore"`
+- Missing numeric values filled by median, missing categories by most frequent value
+- Tuned decision threshold instead of the default 0.50
+- Explanations grouped by business feature
+- Risk tiers and revenue-at-stake estimates for business users
+- Downloadable customer reports
+- Deployment-safe artifact paths
 
 ---
 
-## 🎯 Key Takeaways
-
-This project demonstrates an end-to-end **Machine Learning → Explainability → Business Decision** workflow.
-
-Rather than stopping at model training, the system focuses on how a machine learning model can be transformed into an interactive business application that supports customer retention decisions.
-
-### Core capabilities
-
-```text
-✔ Customer Churn Prediction
-✔ Probability Estimation
-✔ Risk Classification
-✔ Threshold Optimization
-✔ Feature Engineering
-✔ LightGBM Classification
-✔ SHAP Explainability
-✔ Customer Risk Analysis
-✔ Retention Recommendations
-✔ Customer Reporting
-✔ Streamlit Deployment
-```
-
----
-
-## 👨‍💻 Author
+## Author
 
 **Abdelrahman Ahmed Akl**
-
 AI / Machine Learning Engineer
-NLP • LLMs • Generative AI • AI Agents • Machine Learning
+NLP, LLMs, Generative AI, AI Agents, Machine Learning
 
----
-
-## ⭐ If You Find This Project Useful
-
-Feel free to explore the repository, try the live application, and provide feedback.
-
----
-
-### 📌 Project Status
-
-**Status:** Production-ready portfolio project
-**Model:** LightGBM
-**Explainability:** SHAP
-**Deployment:** Streamlit Community Cloud
-**Python:** 3.11
+GitHub: https://github.com/AbdelrhmanAkl
